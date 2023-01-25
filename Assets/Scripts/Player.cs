@@ -12,6 +12,14 @@ public class Player : MonoBehaviour
 
     float jumpForce = 12f;
 
+    bool canDash = true;
+    bool isDashing;
+    float dashingPower = 100f;
+    float dashingTime = 0.2f;
+    float dashingCooldown = 0.5f;
+
+
+    [SerializeField] TrailRenderer tr;
     [SerializeField] float moveSpeed_horizontal = 400.0f;
     [SerializeField] bool is_jumping = false;
     [SerializeField] bool can_jump = false;
@@ -30,6 +38,11 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (isDashing)
+        {
+            return;
+        }
+
         horizontal_value = Input.GetAxis("Horizontal");
 
         if(horizontal_value > 0) sr.flipX = false;
@@ -42,6 +55,11 @@ public class Player : MonoBehaviour
             is_jumping = true;
             animController.SetBool("Jumping", true);
         }
+
+        if(Input.GetKeyDown(KeyCode.LeftShift) && canDash)
+        {
+            StartCoroutine(Dash());
+        }
     }
     void FixedUpdate()
     {
@@ -53,7 +71,11 @@ public class Player : MonoBehaviour
         }
         Vector2 target_velocity = new Vector2(horizontal_value * moveSpeed_horizontal * Time.fixedDeltaTime, rb.velocity.y);
         rb.velocity = Vector2.SmoothDamp(rb.velocity, target_velocity, ref ref_velocity, 0.05f);
-        
+
+        if (isDashing)
+        {
+            return;
+        }
     }
     private void OnTriggerStay2D(Collider2D collision)
     {
@@ -64,4 +86,30 @@ public class Player : MonoBehaviour
     {   
         animController.SetBool("Jumping", false);        
     }
+
+
+    //CODE DASH
+    private IEnumerator Dash()
+    {
+         canDash = false;
+        isDashing = true;
+        float originalGravity = rb.gravityScale;
+        rb.gravityScale = 0f;
+        if (sr.flipX == true)
+        {
+            rb.velocity = new Vector2(-transform.localScale.x * dashingPower, 0f);
+        }
+        else
+        { rb.velocity = new Vector2(transform.localScale.x * dashingPower, 0f); }
+
+        tr.emitting = true;
+        yield return new WaitForSeconds(dashingTime);
+        tr.emitting = false;
+        rb.gravityScale = originalGravity;
+        isDashing = false;
+        yield return new WaitForSeconds(dashingCooldown);
+        canDash = true;
+    }
+
+
 }
