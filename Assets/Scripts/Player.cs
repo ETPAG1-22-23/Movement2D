@@ -25,7 +25,6 @@ public class Player : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        col = GetComponent<CapsuleCollider2D>();
         sr = GetComponent<SpriteRenderer>();
         animController = GetComponent<Animator>();
         //Debug.Log(Mathf.Lerp(current, target, 0));
