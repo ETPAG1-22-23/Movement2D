@@ -11,19 +11,16 @@ public class Player : MonoBehaviour
     float horizontal_value;
     float vertical_value;
     Vector2 ref_velocity = Vector2.zero;
-
     float jumpForce = 12f;
-
     [SerializeField] TrailRenderer tr;
     [SerializeField] float moveSpeed_horizontal = 400.0f;
     [SerializeField] bool is_jumping = false;
     [SerializeField] bool grounded = false;
     [SerializeField] bool is_crouching = false;
     [Range(0, 1)][SerializeField] float smooth_time = 0.5f;
-    [SerializeField] float Climb_speed = 100f;
+    float Climb_speed = 100.0f;
     public bool isLadder = false;
     public bool canClimb = false;
-
     bool CheckSphere;
     private Vector2 aidepose;
     [SerializeField] GameObject aide;
@@ -35,7 +32,6 @@ public class Player : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         sr = GetComponent<SpriteRenderer>();
         animController = GetComponent<Animator>();
-        //Debug.Log(Mathf.Lerp(current, target, 0));
     }
 
     // Update is called once per frame
@@ -56,6 +52,7 @@ public class Player : MonoBehaviour
     }
     void FixedUpdate()
     {
+        // Jump
         if (is_jumping && grounded && !canClimb)
         {           
             is_jumping = false;
@@ -64,6 +61,7 @@ public class Player : MonoBehaviour
             grounded = false;
         }
 
+        // Crouch
         if (Input.GetButton("Vertical") && grounded);
         {
             Crouch();
@@ -71,16 +69,16 @@ public class Player : MonoBehaviour
 
         Vector2 target_velocity = new Vector2(horizontal_value * moveSpeed_horizontal * Time.deltaTime, rb.velocity.y);
 
+        // Climb
         if (canClimb && vertical_value != 0)
         {
             rb.gravityScale = 0f;
             grounded = false;
             target_velocity = new Vector2(horizontal_value * moveSpeed_horizontal * Time.deltaTime, vertical_value * Climb_speed * Time.deltaTime);
-            Debug.Log("Test");
+            animController.SetBool("Climbing", true);
         }
         
         rb.velocity = Vector2.SmoothDamp(rb.velocity, target_velocity, ref ref_velocity, 0.05f);
-
     }
     private void Crouch()
     {
@@ -114,9 +112,7 @@ public class Player : MonoBehaviour
         {
             canClimb = true;
             grounded = false;
-            Debug.Log("enter");
         }       
-        
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
@@ -125,13 +121,11 @@ public class Player : MonoBehaviour
             canClimb = false;
             grounded = true;
             rb.gravityScale = 3f;
-            Debug.Log("exit");
+            animController.SetBool("Climbing", false);
         }
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {   
         animController.SetBool("Jumping", false);    
     }
-
-
 }
